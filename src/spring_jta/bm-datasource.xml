@@ -1,0 +1,215 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "../dtd/spring-beans.dtd">
+<beans>
+	<bean id="dataSource_app" class="bitronix.tm.resource.jdbc.PoolingDataSource" init-method="init" destroy-method="close" depends-on="btmConfig,springContextHolder">
+        <property name="className" value="${jdbc.className}" />
+        <property name="uniqueName" value="${app.uniqueResourceName}" />
+        <property name="maxPoolSize" value="${app.maxPoolSize}" />
+        <property name="allowLocalTransactions" value="true" />
+        <property name="driverProperties">
+            <props>
+                <prop key="user">${app.jdbc.username}</prop>
+                <prop key="password">${app.jdbc.password}</prop>
+                <prop key="URL">${app.jdbc.url}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="dataSource_sys" class="bitronix.tm.resource.jdbc.PoolingDataSource" init-method="init" destroy-method="close" depends-on="btmConfig,springContextHolder">
+        <property name="className" value="${jdbc.className}" />
+        <property name="uniqueName" value="${sys.uniqueResourceName}" />
+        <property name="maxPoolSize" value="${sys.maxPoolSize}" />
+        <property name="allowLocalTransactions" value="true" />
+        <property name="driverProperties">
+            <props>
+                <prop key="user">${sys.jdbc.username}</prop>
+                <prop key="password">${sys.jdbc.password}</prop>
+                <prop key="URL">${sys.jdbc.url}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="dataSource_log" class="bitronix.tm.resource.jdbc.PoolingDataSource" init-method="init" destroy-method="close" depends-on="btmConfig,springContextHolder">
+        <property name="className" value="${jdbc.className}" />
+        <property name="uniqueName" value="${log.uniqueResourceName}" />
+        <property name="maxPoolSize" value="${log.maxPoolSize}" />
+        <property name="allowLocalTransactions" value="true" />
+        <property name="driverProperties">
+            <props>
+                <prop key="user">${log.jdbc.username}</prop>
+                <prop key="password">${log.jdbc.password}</prop>
+                <prop key="URL">${log.jdbc.url}</prop>
+            </props>
+        </property>
+    </bean>
+
+	<bean id="mainSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource_app" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${dialect}</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.connection.useUnicode">true</prop>
+				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
+				<prop key="hibernate.cache.use_query_cache">false</prop>
+				<prop key="hibernate.jdbc.batch_size">25</prop>
+				<prop key="hibernate.jdbc.fetch_size">50</prop>
+				<prop key="hibernate.connection.pool_size">5</prop>
+				<prop key="hibernate.query.substitutions">true 1, false 0, yes 'Y', no 'N'</prop>
+				
+				<!-- btm配置 -->
+				<prop key="hibernate.transaction.jta.platform">org.hibernate.engine.transaction.jta.platform.internal.BitronixJtaPlatform</prop>
+				<!-- avoid using jndi -->
+        		<prop key="hibernate.transaction.factory_class">org.hibernate.engine.transaction.internal.jta.CMTTransactionFactory</prop>
+
+        		<!-- hibernate多租户配置 -->
+	        	<prop key="hibernate.multiTenancy">SCHEMA</prop>
+	        	<prop key="hibernate.tenant_identifier_resolver">com.supporter.prj.core.orm.hibernate.multitenancy.TenantIdResolver</prop>
+	        	<prop key="hibernate.multi_tenant_connection_provider">com.supporter.prj.core.orm.hibernate.multitenancy.ConnectionProviderForApp</prop>
+			</props>
+		</property>
+		<property name="mappingLocations">
+			<list>
+				<value>classpath:/hbm/app_setting/*.hbm.xml</value>
+				<value>classpath:/hbm/auth_manager/*.hbm.xml</value>
+				<value>classpath:/hbm/com_codetable/*.hbm.xml</value>
+				<value>classpath:/hbm/component/*.hbm.xml</value>
+				<value>classpath:/hbm/file_upload/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/swf/*.hbm.xml</value>
+				<value>classpath:/hbm/resource/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/busi_flow/*.hbm.xml</value> 
+				<value>classpath:/hbm/oa_bulletin/*.hbm.xml</value> 
+				<value>classpath:/hbm/com_related_update/*.hbm.xml</value>
+				<!--待办列表 -->
+				<value>classpath:/hbm/todo/*.hbm.xml</value>
+				<!--在线评价 -->
+				<value>classpath:/hbm/sys/user_feedback/*.hbm.xml</value>
+				<!--定时任务 -->
+				<value>classpath:/hbm/eip/quartz/*.hbm.xml</value>
+				<!--excel导入 -->
+				<value>classpath:/hbm/excel_def/*.hbm.xml</value>
+				<value>classpath:/hbm/excel_imp/*.hbm.xml</value>
+				<value>classpath:/hbm/excel_setting/*.hbm.xml</value>
+				<value>classpath:/hbm/page_doc/*.hbm.xml</value>
+				<!-- 关联更新 -->
+				<value>classpath:/hbm/com_related_update/*.hbm.xml</value>
+
+				<!--待办列表 -->
+				<value>classpath:/hbm/todo/*.hbm.xml</value>
+
+				<!--在线评价 -->
+				<value>classpath:/hbm/sys/user_feedback/*.hbm.xml</value>
+				
+				<!--定时任务 -->
+				<value>classpath:/hbm/eip/quartz/*.hbm.xml</value>
+				<value>classpath:/hbm/sys/corporate_info/*.hbm.xml</value>
+			</list>
+		</property>
+		
+		<property name="packagesToScan">
+            <list>
+                <value>com.supporter.prj.*</value>
+            </list>
+        </property>
+		<property name="mappingJarLocations">
+			<list>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="sysSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource_sys" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${dialect}</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.connection.useUnicode">true</prop>
+				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
+				<prop key="hibernate.cache.use_query_cache">false</prop>
+				<prop key="hibernate.jdbc.batch_size">25</prop>
+				<prop key="hibernate.jdbc.fetch_size">50</prop>
+				<prop key="hibernate.connection.pool_size">5</prop>
+				<prop key="hibernate.query.substitutions">true 1, false 0, yes 'Y', no 'N'</prop>
+				
+				<!-- btm配置 -->
+				<prop key="hibernate.transaction.jta.platform">org.hibernate.engine.transaction.jta.platform.internal.BitronixJtaPlatform</prop>
+				<!-- avoid using jndi -->
+        		<prop key="hibernate.transaction.factory_class">org.hibernate.engine.transaction.internal.jta.CMTTransactionFactory</prop>
+
+        		<!-- hibernate多租户配置 -->
+	        	<prop key="hibernate.multiTenancy">SCHEMA</prop>
+	        	<prop key="hibernate.tenant_identifier_resolver">com.supporter.prj.core.orm.hibernate.multitenancy.TenantIdResolver</prop>
+	        	<prop key="hibernate.multi_tenant_connection_provider">com.supporter.prj.core.orm.hibernate.multitenancy.ConnectionProviderForSys</prop>
+			</props>
+		</property>
+		<!-- <property name="jtaTransactionManager"><ref bean="jotm"/></property><property name="useTransactionAwareDataSource"><value>false</value></property> -->
+		<property name="mappingLocations">
+			<list>
+				<value>classpath:/hbm/db_service/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/kernel/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/account_mtn/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/dept/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/dept_mtn/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/emp/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/emp_mtn/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/webapp/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/working_place/*.hbm.xml</value>
+				<value>classpath:/hbm/menu/*.hbm.xml</value>
+				<value>classpath:/hbm/role_mtn/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/online_user/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/stat_tree/*.hbm.xml</value>
+				<!-- 标准版 -->
+	
+				<value>classpath:/hbm/hotkey/*.hbm.xml</value>
+			</list>
+		</property>
+		<property name="packagesToScan">
+            <list>
+                <value>com.supporter.prj.*</value>
+            </list>
+        </property>
+	</bean>
+
+	<bean id="logSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource_log" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${dialect}</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.connection.useUnicode">true</prop>
+				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
+				<prop key="hibernate.cache.use_query_cache">false</prop>
+				<prop key="hibernate.jdbc.batch_size">25</prop>
+				<prop key="hibernate.jdbc.fetch_size">50</prop>
+				<prop key="hibernate.connection.pool_size">5</prop>
+				<prop key="hibernate.query.substitutions">true 1, false 0, yes 'Y', no 'N'</prop>
+				
+				<!-- btm配置 -->
+				<prop key="hibernate.transaction.jta.platform">org.hibernate.engine.transaction.jta.platform.internal.BitronixJtaPlatform</prop>
+				<!-- avoid using jndi -->
+        		<prop key="hibernate.transaction.factory_class">org.hibernate.engine.transaction.internal.jta.CMTTransactionFactory</prop>
+
+        		<!-- hibernate多租户配置 -->
+	        	<prop key="hibernate.multiTenancy">SCHEMA</prop>
+	        	<prop key="hibernate.tenant_identifier_resolver">com.supporter.prj.core.orm.hibernate.multitenancy.TenantIdResolver</prop>
+	        	<prop key="hibernate.multi_tenant_connection_provider">com.supporter.prj.core.orm.hibernate.multitenancy.ConnectionProviderForLog</prop>
+			</props>
+		</property>
+
+		<!-- <property name="jtaTransactionManager"><ref bean="jotm"/></property> <property name="useTransactionAwareDataSource"><value>false</value></property> -->
+		<property name="mappingLocations">
+			<list>
+				<value>classpath:/hbm/log/*.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+</beans>

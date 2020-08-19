@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "../dtd/spring-beans.dtd">
+<beans>
+	<bean id="dataSource_year" class="bitronix.tm.resource.jdbc.PoolingDataSource" init-method="init" destroy-method="close" depends-on="btmConfig">
+        <property name="className" value="${jdbc.className}" />
+        <property name="uniqueName" value="${yearDb.uniqueResourceName}" />
+        <property name="maxPoolSize" value="${yearDb.maxPoolSize}" />
+        <property name="allowLocalTransactions" value="true" />
+        <property name="driverProperties">
+            <props>
+                <prop key="user">${yearDb.jdbc.username}</prop>
+                <prop key="password">${yearDb.jdbc.password}</prop>
+                <prop key="URL">${yearDb.jdbc.url}</prop>
+            </props>
+        </property>
+    </bean>
+	<bean id="yearSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean" depends-on="btmConfig,springContextHolder">
+		<property name="dataSource">
+			<ref bean="dataSource_year" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${dialect}</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.connection.useUnicode">true</prop>
+				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
+				<prop key="hibernate.cache.use_query_cache">false</prop>
+				<prop key="hibernate.jdbc.batch_size">25</prop>
+				<prop key="hibernate.connection.pool_size">5</prop>
+				<prop key="hibernate.jdbc.fetch_size">50</prop>
+				<prop key="hibernate.query.substitutions">true 1, false 0, yes 'Y', no 'N'</prop>
+				
+				<!-- btm配置 -->
+				<prop key="hibernate.transaction.jta.platform">org.hibernate.engine.transaction.jta.platform.internal.BitronixJtaPlatform</prop>
+				<!-- avoid using jndi -->
+        		<prop key="hibernate.transaction.factory_class">org.hibernate.engine.transaction.internal.jta.CMTTransactionFactory</prop>
+
+        		<!-- hibernate多租户配置 -->
+	        	<prop key="hibernate.multiTenancy">SCHEMA</prop>
+	        	<prop key="hibernate.tenant_identifier_resolver">com.supporter.prj.core.orm.hibernate.multitenancy.TenantIdResolver</prop>
+	        	<prop key="hibernate.multi_tenant_connection_provider">com.supporter.prj.core.orm.hibernate.multitenancy.ConnectionProviderForYearDb</prop>
+			</props>
+		</property>
+		<property name="mappingLocations">
+			<list>
+				<value>classpath*:/hbm/bm/**/*.hbm.xml</value>
+			</list>
+		</property>
+		<property name="packagesToScan">
+			<list>
+           <value>com.supporter.prj.*</value>
+			</list>
+		</property>
+	</bean>
+</beans>

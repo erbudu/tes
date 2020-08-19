@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.springframework.org/schema/beans" xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:cache="http://www.springframework.org/schema/cache" xmlns:p="http://www.springframework.org/schema/p" xmlns:jee="http://www.springframework.org/schema/jee"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.0.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+       http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache-4.0.xsd">
+       
+	<!-- 业务类中的@Autowired注解进行驱动 -->
+	<bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor"></bean>
+
+	<bean id="springContextHolder" class="com.supporter.prj.core.spring.SpringContextHolder" lazy-init="false"></bean>
+	
+	<!-- 业务类中的@Transaction注解进行驱动 -->
+	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>
+
+	<bean id="propertyConfigurer" class="com.supporter.prj.encrypt.EncryptPropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list> 
+				<value>classpath:datasource_mysql.properties</value>
+				<value>classpath:datasource_feedback_mysql.properties</value>
+				<value>classpath:datasource_tenant_mysql.properties</value>
+				<!-- <value>classpath:datasource_sqlserver.properties</value> -->
+				<!-- <value>classpath:datasource_mysql.properties</value> -->
+				<!-- <value>classpath:datasource_mysql.properties</value>-->
+			</list>
+		</property>
+	</bean>
+
+	<!--  Bitronix Transaction Manager embedded configuration -->
+    <bean id="btmConfig" factory-method="getConfiguration" class="bitronix.tm.TransactionManagerServices">
+        <property name="serverId" value="spring-btm" />
+        <!-- <property name="defaultTransactionTimeout" value="600" /> -->
+        <property name="logPart1Filename" value="bmv6_BTMLogFile1.log"/>
+   	 		<property name="logPart2Filename" value="bmv6_BTMLogFile2.log"/> 
+    </bean>
+    <!-- create BTM transaction manager -->
+    <bean id="bitronixTransactionManager" factory-method="getTransactionManager"
+		class="bitronix.tm.TransactionManagerServices" destroy-method="shutdown" depends-on="btmConfig" />
+
+	<bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+		<description>JtaTransactionManager</description>
+		<property name="transactionManager">
+			<ref bean="bitronixTransactionManager" />
+		</property>
+		<property name="userTransaction">
+			<ref bean="bitronixTransactionManager" />
+		</property>
+	</bean>
+
+	<context:component-scan base-package="com.supporter.prj">
+		<context:include-filter type="regex" expression=".dao.*" />
+		<context:include-filter type="regex" expression=".service..*" />
+	</context:component-scan>
+	
+	<aop:config>
+		<aop:advisor pointcut="execution(* com.supporter.prj..*.service..*(..))" advice-ref="txWorksysAdvice" />
+	</aop:config>
+	
+	<tx:advice id="txWorksysAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="*" propagation="REQUIRED" rollback-for="Exception" isolation="DEFAULT" />
+			<tx:method name="get*" propagation="SUPPORTS" rollback-for="Exception" read-only="true"/>
+			<tx:method name="find*" propagation="SUPPORTS" rollback-for="Exception" read-only="true"/>
+			<tx:method name="exist*" propagation="SUPPORTS" rollback-for="Exception" read-only="true"/>
+			<tx:method name="keyExists" propagation="SUPPORTS" rollback-for="Exception" read-only="true"/>
+			<tx:method name="updateBuffer" propagation="SUPPORTS" no-rollback-for="Exception" read-only="true"/>
+			<tx:method name="put" propagation="SUPPORTS" no-rollback-for="Exception" read-only="true"/>
+			
+			
+			<!--
+			<tx:method name="insert*" propagation="REQUIRED" rollback-for="Exception" read-only="false" isolation="DEFAULT" />
+			<tx:method name="save*"   propagation="REQUIRED" rollback-for="Exception" read-only="false" isolation="DEFAULT"/> 
+			<tx:method name="update*" propagation="REQUIRED" rollback-for="Exception" read-only="false" isolation="DEFAULT"/>
+			<tx:method name="delete*" propagation="REQUIRED" rollback-for="Exception" read-only="false" isolation="DEFAULT"/>
+			
+			<tx:method name="get*"    propagation="NOT_SUPPORTED" no-rollback-for="Exception" read-only="true"/>
+			<tx:method name="find*"   propagation="NOT_SUPPORTED" rollback-for="Exception" 	 read-only="true" /> 
+			<tx:method name="*" 	  propagation="NOT_SUPPORTED" rollback-for="Exception" 	 read-only="false"	isolation="DEFAULT" />  
+			--> 
+		
+		</tx:attributes>
+	</tx:advice>
+
+</beans>

@@ -1,0 +1,203 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.springframework.org/schema/beans" xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:cache="http://www.springframework.org/schema/cache" xmlns:p="http://www.springframework.org/schema/p" xmlns:jee="http://www.springframework.org/schema/jee"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.0.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+       http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache-4.0.xsd">
+       
+	<!-- App部分 -->
+	<bean id="dataSource_app" class="org.apache.commons.dbcp.BasicDataSource" depends-on="springContextHolder">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${app.jdbc.url}" />
+		<property name="username" value="${app.jdbc.username}" />
+		<property name="password" value="${app.jdbc.password}" />
+		<property name="maxActive" value="${app.maxPoolSize}" />
+		<property name="maxIdle" value="10" />
+		<property name="maxWait" value="120000" /> 
+		<property name="validationQuery" value="${validationQuery}"/> 
+	</bean> 
+  
+	<bean id="mainSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource_app" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${dialect}</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.connection.useUnicode">true</prop>
+				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
+				<prop key="hibernate.cache.use_query_cache">false</prop>
+				<prop key="hibernate.jdbc.batch_size">25</prop>
+				<prop key="hibernate.jdbc.fetch_size">50</prop>
+				<prop key="hibernate.connection.pool_size">5</prop>
+				<prop key="hibernate.query.substitutions">true 1, false 0, yes 'Y', no 'N'</prop>
+				
+				<!-- hibernate多租户配置 -->
+				<prop key="hibernate.multiTenancy">SCHEMA</prop>
+				<prop key="hibernate.tenant_identifier_resolver">com.supporter.prj.core.orm.hibernate.multitenancy.TenantIdResolver</prop>
+				<prop key="hibernate.multi_tenant_connection_provider">com.supporter.prj.core.orm.hibernate.multitenancy.ConnectionProviderForApp</prop>
+			</props>
+		</property>
+		<property name="mappingLocations">
+			<list>
+				<value>classpath*:/hbm/bm/**/*.hbm.xml</value>				 
+				<value>classpath:/hbm/eip/quartz/*.hbm.xml</value>
+				<value>classpath:/hbm/todo/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/swf/*.hbm.xml</value>
+				
+				<value>classpath:/hbm/excel_def/*.hbm.xml</value>
+				<value>classpath:/hbm/excel_imp/*.hbm.xml</value>
+				<value>classpath:/hbm/excel_setting/*.hbm.xml</value>
+			</list>
+		</property>
+		<property name="packagesToScan">
+            <list>
+                <value>com.supporter.prj.*</value>
+            </list>
+        </property>
+		<property name="mappingJarLocations">
+			<list>
+			</list>
+		</property>
+	</bean>
+  
+  	<!-- 业务类中的@Transaction注解进行驱动 -->
+	<tx:annotation-driven transaction-manager="transactionManager_app" proxy-target-class="true" />
+	
+	<bean id="transactionManager_app"  class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+      <property name="sessionFactory" ref="mainSessionFactory" />
+  	</bean>
+   
+  <!-- Sys部分 -->
+	<bean id="dataSource_sys" class="org.apache.commons.dbcp.BasicDataSource" depends-on="springContextHolder">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${sys.jdbc.url}" />
+		<property name="username" value="${sys.jdbc.username}" />
+		<property name="password" value="${sys.jdbc.password}" />
+		<property name="maxActive" value="${sys.maxPoolSize}" />
+		<property name="maxIdle" value="10" />
+		<property name="maxWait" value="120000" /> 
+		<property name="validationQuery" value="select 1 from dual"/> 
+	</bean> 
+  
+	<bean id="sysSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource_sys" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${dialect}</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.connection.useUnicode">true</prop>
+				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
+				<prop key="hibernate.cache.use_query_cache">false</prop>
+				<prop key="hibernate.jdbc.batch_size">25</prop>
+				<prop key="hibernate.jdbc.fetch_size">50</prop>
+				<prop key="hibernate.connection.pool_size">5</prop>
+				<prop key="hibernate.query.substitutions">true 1, false 0, yes 'Y', no 'N'</prop>
+				
+    		<!-- hibernate多租户配置 -->
+      	<prop key="hibernate.multiTenancy">SCHEMA</prop>
+      	<prop key="hibernate.tenant_identifier_resolver">com.supporter.prj.core.orm.hibernate.multitenancy.TenantIdResolver</prop>
+      	<prop key="hibernate.multi_tenant_connection_provider">com.supporter.prj.core.orm.hibernate.multitenancy.ConnectionProviderForSys</prop>
+			</props>
+		</property>
+		<property name="mappingLocations">
+			<list>
+				<value>classpath:/hbm/eip/online_user/*.hbm.xml</value>
+				<!-- 
+				<value>classpath:/hbm/db_service/*.hbm.xml</value> 
+				<value>classpath:/hbm/eip/account_mtn/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/dept/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/dept_mtn/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/emp/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/emp_mtn/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/webapp/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/working_place/*.hbm.xml</value>
+				<value>classpath:/hbm/menu/*.hbm.xml</value>
+				<value>classpath:/hbm/role_mtn/*.hbm.xml</value>
+				<value>classpath:/hbm/eip/stat_tree/*.hbm.xml</value>
+				<value>classpath:/hbm/hotkey/*.hbm.xml</value>
+				-->
+			</list>
+		</property>
+		<property name="packagesToScan">
+            <list>
+                <value>com.supporter.prj.*</value>
+            </list>
+        </property>
+	</bean>
+   
+	<tx:annotation-driven transaction-manager="transactionManager_sys" proxy-target-class="true" />
+	
+	<bean id="transactionManager_sys"  class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+      <property name="sessionFactory" ref="sysSessionFactory" />
+	</bean>
+  	 
+	<!-- Log部分 -->
+	<bean id="dataSource_log" class="org.apache.commons.dbcp.BasicDataSource" depends-on="springContextHolder">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${log.jdbc.url}" />
+		<property name="username" value="${log.jdbc.username}" />
+		<property name="password" value="${log.jdbc.password}" />
+		<property name="maxActive" value="${log.maxPoolSize}" />
+		<property name="maxIdle" value="5" />
+		<property name="maxWait" value="120000" /> 
+		<property name="validationQuery" value="select 1 from dual"/> 
+	</bean>
+	<bean id="logSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource_log" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${dialect}</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.connection.useUnicode">true</prop>
+				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
+				<prop key="hibernate.cache.use_query_cache">false</prop>
+				<prop key="hibernate.jdbc.batch_size">25</prop>
+				<prop key="hibernate.jdbc.fetch_size">50</prop>
+				<prop key="hibernate.connection.pool_size">5</prop>
+				<prop key="hibernate.query.substitutions">true 1, false 0, yes 'Y', no 'N'</prop>
+				 
+    			<!-- hibernate多租户配置 -->
+				<prop key="hibernate.multiTenancy">SCHEMA</prop>
+				<prop key="hibernate.tenant_identifier_resolver">com.supporter.prj.core.orm.hibernate.multitenancy.TenantIdResolver</prop>
+				<prop key="hibernate.multi_tenant_connection_provider">com.supporter.prj.core.orm.hibernate.multitenancy.ConnectionProviderForLog</prop>
+			</props>
+		</property>
+		<property name="mappingLocations">
+			<list>
+				<value>classpath:/hbm/log/*.hbm.xml</value>
+				<value>classpath:/hbm/excel_def/*.hbm.xml</value>
+				<value>classpath:/hbm/excel_imp/*.hbm.xml</value>
+				<value>classpath:/hbm/excel_setting/*.hbm.xml</value>
+			</list>
+		</property>
+		<property name="packagesToScan">
+			<list>
+				<value>com.supporter.prj.*</value>
+			</list>
+		</property>
+	</bean>
+	
+	<tx:annotation-driven transaction-manager="transactionManager_log" proxy-target-class="true" />
+	
+	<bean id="transactionManager_log"  class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+      <property name="sessionFactory" ref="logSessionFactory" />
+	</bean>
+   
+</beans>

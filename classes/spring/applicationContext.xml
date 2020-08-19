@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+ 
+<beans>
+
+	<!-- ========================= GENERAL DEFINITIONS ========================= -->
+	<!-- Configurer that replaces ${...} placeholders with values from properties files -->
+	<!-- (in this case, mail and JDBC related properties) -->
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:spring/mail.properties</value> 
+			</list>
+		</property>
+	</bean>
+	
+	<!-- MailSender used by EmailAdvice -->
+	<!--
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="${mail.host}"/>
+	</bean>
+	-->
+
+	<!--
+	<bean id="emailAdvice" class="org.springframework.samples.jpetstore.domain.logic.SendOrderConfirmationEmailAdvice">
+		<property name="mailSender" ref="mailSender"/>
+	</bean>
+	-->
+
+	<!-- Advisor encapsulating email advice -->
+	<!--
+	<bean id="emailAdvisor" class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+		<constructor-arg ref="emailAdvice"/>
+		<property name="pattern" value=".*insertOrder.*"/>
+	</bean>
+	--> 
+ 
+</beans>

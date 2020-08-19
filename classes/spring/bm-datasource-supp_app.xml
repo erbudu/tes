@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.springframework.org/schema/beans" xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:cache="http://www.springframework.org/schema/cache" xmlns:p="http://www.springframework.org/schema/p" xmlns:jee="http://www.springframework.org/schema/jee"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.0.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+       http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache-4.0.xsd">
+       
+  <bean id="dataSource_supp_app" class="org.apache.commons.dbcp.BasicDataSource" depends-on="springContextHolder">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${supp_app.jdbc.url}" />
+		<property name="username" value="${supp_app.jdbc.username}" />
+		<property name="password" value="${supp_app.jdbc.password}" />
+		<property name="maxActive" value="${supp_app.maxPoolSize}" />
+		<property name="maxIdle" value="10" />
+		<property name="maxWait" value="120000" /> 
+		<property name="validationQuery" value="${validationQuery}"/> 
+  </bean> 
+  
+  <bean id="supp_appSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource_supp_app" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${dialect}</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.connection.useUnicode">true</prop>
+				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
+				<prop key="hibernate.cache.use_query_cache">false</prop>
+				<prop key="hibernate.jdbc.batch_size">25</prop>
+				<prop key="hibernate.jdbc.fetch_size">50</prop>
+				<prop key="hibernate.connection.pool_size">5</prop>
+				<prop key="hibernate.query.substitutions">true 1, false 0, yes 'Y', no 'N'</prop>
+			</props>
+		</property>
+		<property name="mappingLocations">
+			<list> 
+			</list>
+		</property>
+		<property name="packagesToScan">
+            <list>
+                <value>com.supporter.prj.*</value>
+            </list>
+        </property>
+		<property name="mappingJarLocations">
+			<list>
+			</list>
+		</property>
+	</bean>
+  
+  	<!-- 业务类中的@Transaction注解进行驱动 -->
+	<tx:annotation-driven transaction-manager="transactionManager_supp_app" proxy-target-class="true" />
+	
+	<bean id="transactionManager_supp_app"  class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+      <property name="sessionFactory" ref="supp_appSessionFactory" />
+ 	</bean>
+    
+</beans>

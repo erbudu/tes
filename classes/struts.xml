@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="GBK" ?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+    <!-- Include struts defaults (from Struts JAR). -->
+    <include file="struts-default.xml" />
+    <include file="supp-default.xml" />
+    <include file="bm.struts_default.xml" />
+    
+    <!-- EIP start -->
+    <include file="tools.auth_manager.xml" />
+	<include file="eip.app_setting.xml" />
+	<include file="eip.sys.account.xml" />
+    <include file="eip.sys.account_mtn.xml" />
+    <include file="eip.sys.dept.xml" />
+    <include file="eip.sys.dept_mtn.xml" />
+    <include file="eip.sys.dept_mtn_ex.xml" />
+    <include file="eip.sys.emp.xml" />
+    <include file="eip.sys.emp_mtn.xml" />
+    <include file="tools.workingplace.xml" /> 
+    <include file="eip.sys.menu.xml" /> 
+    <include file="eip.sys.role.xml" />
+    <include file="ext.portal.xml" />
+    <include file="sys.page_doc.xml" />
+    <include file="eip.tools.busi_flow.xml"/>
+    <include file="eip.tools.swf.xml"/>
+	<include file="eip.sys.online_user.xml" />
+	<include file="eip.sys.security.xml" />
+   
+    <include file="tools.appraisal_item.xml" /> 
+    <include file="tools.appraisal_template.xml" /> 
+    <include file="tools.appraisal.xml" />
+    <include file="tools.component.xml" />
+    <include file="tools.com_codetable.xml" />
+    <include file="tools.dbdesigner.xml" />
+    <include file="tools.excel_def.xml" /> 
+	<include file="tools.excel_imp.xml" />
+	<include file="tools.excel_setting.xml" />
+    <include file="tools.expression.xml" />
+    <include file="tools.report_def.xml" /> 
+	<include file="tools.report_generate.xml" />
+    <include file="tools.report_release.xml" />
+    
+    <include file="tools.log.xml" /> 
+    <include file="tools.serial_number_year.xml" />    
+    <include file="tools.todo.xml" />
+    
+    <include file="tools.file_upload.xml"/>
+    <include file="util.resource.xml"/>
+    <include file="oa.bulletin.xml" />
+    
+    <!-- supp_db_service.jar -->
+	<include file="sys.year_database.xml"></include>
+	
+	<!-- supp_stat_tree.jar :the tree for rpt stat -->
+    <include file="eip.sys.stat_tree.xml" />
+    <!-- EIP end -->
+    <!-- data_validation -->
+    <include file="data-validation-struts.xml" />
+	<!-- 自定义报表 -->
+	<include file="tools.ud_rpt_list.xml" />
+
+    <constant name="struts.multipart.saveDir" value="\temp"></constant>
+    <constant name="struts.multipart.maxSize" value="100000000"></constant>
+ 	<constant name="struts.objectFactory" value="spring"></constant>
+	
+	<include file="struts/tools.com_related_update.xml" />
+	<!-- 定时任务 -->
+	<include file="struts/tools.quartz.xml" />
+	
+	<!--在线评价  -->
+ 	<include file="struts/sys.user_feedback.xml" />
+ 	<include file="sys.struts.xml" />
+ 	
+ 	<include file="supp.hotkey.struts.xml" />
+ 	<include file="supp.main.struts.xml" />
+ 	
+ 	<!-- 编号规则定义 -->
+	<include file="struts/serial_number.struts.xml" />
+ 
+</struts>
+

@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:aop="http://www.springframework.org/schema/aop"
+		xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd"
+		default-lazy-init="true">
+ 
+ 	<bean id="processOnlineUserQueues" class="com.supporter.prj.eip.online_user.task.ProcessOnlineUserQueues"></bean>
+	<bean id="processOnlineUserQueuesJobDetail" class="com.supporter.prj.quartz.JobDetailFactoryBean">
+		<property name="targetObject"><ref local="processOnlineUserQueues" /></property>
+		<property name="targetMethod"><value>start</value></property>
+		<!--
+		<property name="jobListenerNames">
+			<list>
+				<value>jobRunningStateListener</value>
+			</list>
+		</property>
+		-->
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="processOnlineUserQueuesTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail"><ref bean="processOnlineUserQueuesJobDetail" /></property>
+		<property name="cronExpression">
+			<value>0/3 * * * * ?</value>
+		</property>
+	</bean>
+ 
+ 	<!-- 
+	<bean id="timeoutActHandler" class="com.supporter.prj.swf.task.TimeoutActHandler"></bean>
+	<bean id="timeoutActHandlerJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject"><ref local="timeoutActHandler" /></property>
+		<property name="targetMethod"><value>start</value></property>
+		<property name="jobListenerNames">
+			<list>
+				<value>jobRunningStateListener</value>
+			</list>
+		</property>
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="timeoutActHandlerTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail"><ref bean="timeoutActHandlerJobDetail" /></property>
+		<property name="cronExpression">
+			<value>0/3 * * * * ?</value>
+		</property>
+	</bean>
+	<bean id="paidQueuePolling" class="com.supporter.prj.bm.payment.task.PaidQueuePolling"></bean>
+	<bean id="paidQueuePollingJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+	     <property name="targetObject"><ref local="paidQueuePolling"/></property>
+	     <property name="targetMethod"><value>execute</value></property>
+	     <property name="jobListenerNames"><list><value>jobRunningStateListener</value></list></property>
+	     <property name="concurrent" value="false" />
+	 </bean>
+	 <bean id="paidQueuePollingTaskTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean"> 
+	     <property name="jobDetail"><ref bean="paidQueuePollingJobDetail"/></property>
+	     <property name="cronExpression">
+	         <value>0/10 * * * * ?</value>
+	     </property>
+	 </bean>
+    <bean id="scanAllTasksPending" class="com.supporter.prj.ScanAllTasksPendingReqQueuePolling"></bean>
+    <bean id="scanAllTasksPendingJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+         <property name="targetObject"><ref local="scanAllTasksPending"/></property>
+         <property name="targetMethod"><value>start</value></property>
+         <property name="jobListenerNames"><list><value>jobRunningStateListener</value></list></property>   
+         <property name="concurrent" value="false" />
+     </bean>
+     <bean id="scanAllTasksPendingTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean"> 
+         <property name="jobDetail"><ref bean="scanAllTasksPendingJobDetail"/></property>
+         <property name="cronExpression">
+             <value>0 0/10 * * * ?</value>
+         </property>
+     </bean>
+    <bean id="deptDeactivatedPending" class="com.supporter.prj.eip.dept_mtn.task.PendingReqQueuePolling"></bean>
+        <bean id="deptDeactivatedPendingJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+         <property name="targetObject"><ref local="deptDeactivatedPending"/></property>
+         <property name="targetMethod"><value>start</value></property>
+         <property name="jobListenerNames"><list><value>jobRunningStateListener</value></list></property>   
+         <property name="concurrent" value="false" />
+     </bean>
+     <bean id="deptDeactivatedPendingTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean"> 
+         <property name="jobDetail"><ref bean="deptDeactivatedPendingJobDetail"/></property>
+         <property name="cronExpression">
+             <value>0 35 11 ? * *</value>
+         </property>
+     </bean>
+	 
+-->
+	 
+	<bean id="quartzSchedule" autowire="no" class="com.supporter.prj.job.schedule.ExtSchedulerFactoryBean"> 
+	     <property name="triggers"> 
+		     <list>
+		     		<!--
+		     		<ref local="timeoutActHandlerTrigger" />
+				 		<ref local="paidQueuePollingTaskTrigger"/>
+            <ref local="scanAllTasksPendingTrigger"/> 
+            <ref local="deptDeactivatedPendingTrigger"/> 
+		     		-->
+		        <ref local="processOnlineUserQueuesTrigger" />
+		     </list>
+	     </property>  
+	 	<property name="applicationContextSchedulerContextKey">    
+	 		<value>applicationContext</value>       
+	 	</property>    
+	  <property name="globalJobListeners">
+		   <list>
+				<ref bean="jobRunningStateListener" />
+		   </list>
+		</property> 
+	 </bean>
+	 <bean id="jobRunningStateListener" class="com.supporter.prj.quartz.JobRunningStateListener">
+	 	<property name="name"><value>jobRunningStateListener</value></property>
+	 </bean>
+	
+	 <!-- 
+	 cron表达式实例：
+	 	0-59 * * * * ? : 每秒执行
+	 	0/10 * * * * ? : 每隔10秒执行一次
+	 	0 0 12 * * ? : 每天中午12点触发 
+		0 15 10 ? * * : 每天上午10:15触发 
+		0 15 10 * * ? : 每天上午10:15触发 
+		0 15 10 * * ? *: 每天上午10:15触发 
+		0 15 10 * * ? 2012 : 2012年的每天上午10:15触发 
+		0 * 14 * * ? : 在每天下午2点到下午2:59期间的每1分钟触发 
+		0 0/5 14 * * ? : 在每天下午2点到下午2:55期间的每5分钟触发 
+		0 0/5 14,18 * * ? : 在每天下午2点到2:55期间和下午6点到6:55期间的每5分钟触发 
+		0 0-5 14 * * ? : 在每天下午2点到下午2:05期间的每1分钟触发 
+		0 10,44 14 ? 3 WED : 每年三月的星期三的下午2:10和2:44触发 
+		0 15 10 ? * MON-FRI : 周一至周五的上午10:15触发 
+		0 15 10 15 * ? : 每月15日上午10:15触发 
+		0 15 10 L * ? : 每月最后一日的上午10:15触发 
+		0 15 10 ? * 6L : 每月的最后一个星期五上午10:15触发 
+		0 15 10 ? * 6L 2002-2005 : 2002年至2005年的每月的最后一个星期五上午10:15触发 
+		0 15 10 ? * 6#3 : 每月的第三个星期五上午10:15触发 
+		0 6 * * * : 每天早上6点 
+		0 */2 * * * :每两个小时 
+		0 23-7/2,8 * * *:  晚上11点到早上8点之间每两个小时，早上八点 
+		0 11 4 * 1-3 :每个月的4号和每个礼拜的礼拜一到礼拜三的早上11点 
+		0 4 1 1 * : 1月1日早上4点 
+	  -->
+</beans>

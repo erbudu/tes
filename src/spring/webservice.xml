@@ -1,0 +1,63 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://cxf.apache.org/jaxws
+        http://cxf.apache.org/schemas/jaxws.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+	<!-- cxf必要配置
+		<import resource="classpath:META-INF/cxf/cxf.xml" />  
+		<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />  
+		<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	-->
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<!-- 公司总部配置，供数据中心调用 -->
+	<jaxws:endpoint id="pmWebService" implementor="#pmWebServiceImpl"  address="/pm" >
+        <jaxws:inInterceptors>
+            <bean class="org.apache.cxf.binding.soap.saaj.SAAJInInterceptor" />
+            <bean class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor">
+                <constructor-arg>
+                    <map>
+                        <entry key="action" value="UsernameToken" />
+                        <entry key="passwordType" value="PasswordText" />
+                        <entry key="user" value="FHDClient" />
+                        <entry key="passwordCallbackRef">
+                            <ref bean="cxfPasswordCallback" />
+                        </entry>
+                    </map>
+                </constructor-arg>
+            </bean>
+        </jaxws:inInterceptors>
+    </jaxws:endpoint>
+    
+    <!-- 公司总部配置，提供共享编码服务 :带安全验证-->
+    <jaxws:endpoint id="codeShareService" implementor="#codeShareServiceImpl"  address="/codeShare" >
+        <jaxws:inInterceptors>
+            <bean class="org.apache.cxf.binding.soap.saaj.SAAJInInterceptor" />
+            <bean class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor">
+                <constructor-arg>
+                    <map>
+                        <entry key="action" value="UsernameToken" />
+                        <entry key="passwordType" value="PasswordText" />
+                        <entry key="user" value="FHDClient" />
+                        <entry key="passwordCallbackRef">
+                            <ref bean="cxfPasswordCallback" />
+                        </entry>
+                    </map>
+                </constructor-arg>
+            </bean>
+        </jaxws:inInterceptors>
+    </jaxws:endpoint>
+    <!-- 公司总部配置，提供共享编码服务 :不验证-->
+    <jaxws:endpoint id="codeShareServiceForOld" implementor="#codeShareServiceImplForOld"  address="/codeShareForOld" >
+    </jaxws:endpoint>
+	
+</beans>
